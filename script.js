@@ -137,3 +137,266 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial render
     renderEmails();
 });
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const emailList = document.getElementById('emailList');
+    const emailDetailView = document.getElementById('emailDetailView');
+    const closeDetailBtn = document.getElementById('closeDetailBtn');
+    const composeBtn = document.getElementById('ekmailComposeBtn');
+    const composeModal = document.getElementById('composeModal');
+    const closeComposeBtn = document.getElementById('closeComposeBtn');
+    const composeForm = document.getElementById('composeForm');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const replyBtn = document.getElementById('replyBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const folderItems = document.querySelectorAll('.ekmail-folders li');
+    const inboxCount = document.getElementById('inboxCount');
+    const folderInfo = document.getElementById('folderInfo');
+
+    // Email Data
+    let emails = JSON.parse(localStorage.getItem('ekmail-emails')) || [];
+    let currentFolder = 'inbox';
+    let selectedEmailId = null;
+
+    // Sample data if empty
+    if (emails.length === 0) {
+        emails = [
+            {
+                id: generateId(),
+                from: 'support@ekmail.com',
+                to: 'user@ekmail.com',
+                subject: 'Welcome to EKmail!',
+                body: 'Thank you for choosing EKmail as your email service. We hope you enjoy using it!',
+                date: new Date().toISOString(),
+                read: false,
+                folder: 'inbox'
+            },
+            {
+                id: generateId(),
+                from: 'notifications@linkedin.com',
+                to: 'user@ekmail.com',
+                subject: 'New connection request',
+                body: 'You have a new connection request from John Smith.',
+                date: new Date(Date.now() - 3600000).toISOString(),
+                read: true,
+                folder: 'inbox'
+            },
+            {
+                id: generateId(),
+                from: 'user@ekmail.com',
+                to: 'friend@example.com',
+                subject: 'Meeting tomorrow',
+                body: 'Hi there, just confirming our meeting tomorrow at 2pm.',
+                date: new Date(Date.now() - 86400000).toISOString(),
+                read: true,
+                folder: 'sent'
+            }
+        ];
+        saveEmails();
+    }
+
+    // Initialize
+    renderEmailList();
+
+    // Event Listeners
+    composeBtn.addEventListener('click', openComposeModal);
+    closeComposeBtn.addEventListener('click', closeComposeModal);
+    closeDetailBtn.addEventListener('click', closeEmailDetail);
+    refreshBtn.addEventListener('click', refreshEmails);
+    deleteBtn.addEventListener('click', deleteSelectedEmail);
+    replyBtn.addEventListener('click', replyToEmail);
+    forwardBtn.addEventListener('click', forwardEmail);
+    
+    composeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendEmail();
+    });
+
+    folderItems.forEach(item => {
+        item.addEventListener('click', function() {
+            folderItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            currentFolder = this.dataset.folder;
+            folderInfo.textContent = this.textContent.trim().replace(/[0-9]/g, '');
+            renderEmailList();
+        });
+    });
+
+    // Functions
+    function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function saveEmails() {
+        localStorage.setItem('ekmail-emails', JSON.stringify(emails));
+    }
+
+    function renderEmailList() {
+        emailList.innerHTML = '';
+        const filteredEmails = emails.filter(email => email.folder === currentFolder);
+        
+        if (filteredEmails.length === 0) {
+            emailList.innerHTML = '<div class="empty-folder">No emails in this folder</div>';
+            return;
+        }
+
+        filteredEmails.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        filteredEmails.forEach(email => {
+            const emailItem = document.createElement('div');
+            emailItem.className = `email-item ${email.read ? '' : 'unread'}`;
+            emailItem.dataset.id = email.id;
+            
+            const date = new Date(email.date);
+            const dateString = date.toLocaleDateString() === new Date().toLocaleDateString() 
+                ? date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                : date.toLocaleDateString();
+            
+            emailItem.innerHTML = `
+                <div class="email-sender">${email.folder === 'sent' ? email.to : email.from}</div>
+                <div class="email-subject">${email.subject}</div>
+                <div class="email-preview">${email.body.substring(0, 50)}${email.body.length > 50 ? '...' : ''}</div>
+                <div class="email-date">${dateString}</div>
+            `;
+            
+            emailItem.addEventListener('click', () => viewEmail(email.id));
+            emailList.appendChild(emailItem);
+        });
+
+        updateUnreadCount();
+    }
+
+    function viewEmail(id) {
+        const email = emails.find(e => e.id === id);
+        if (!email) return;
+
+        // Mark as read
+        if (!email.read && email.folder === 'inbox') {
+            email.read = true;
+            saveEmails();
+            renderEmailList();
+        }
+
+        const date = new Date(email.date);
+        const dateString = date.toLocaleString();
+        
+        document.getElementById('detailSubject').textContent = email.subject;
+        document.getElementById('detailSender').textContent = email.folder === 'sent' ? 'To: ' + email.to : email.from;
+        document.getElementById('detailEmail').textContent = email.folder === 'sent' ? '' : email.from;
+        document.getElementById('detailDate').textContent = dateString;
+        document.getElementById('detailBody').textContent = email.body;
+        document.getElementById('detailAvatar').textContent = email.folder === 'sent' ? email.to.charAt(0).toUpperCase() : email.from.charAt(0).toUpperCase();
+
+        selectedEmailId = id;
+        emailDetailView.style.display = 'flex';
+    }
+
+    function closeEmailDetail() {
+        emailDetailView.style.display = 'none';
+        selectedEmailId = null;
+    }
+
+    function openComposeModal() {
+        composeModal.style.display = 'flex';
+    }
+
+    function closeComposeModal() {
+        composeModal.style.display = 'none';
+        composeForm.reset();
+    }
+
+    function sendEmail() {
+        const to = document.getElementById('composeTo').value;
+        const subject = document.getElementById('composeSubject').value;
+        const body = document.getElementById('composeBody').value;
+
+        if (!to || !body) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Add to sent folder
+        emails.push({
+            id: generateId(),
+            from: 'user@ekmail.com',
+            to: to,
+            subject: subject || '(No subject)',
+            body: body,
+            date: new Date().toISOString(),
+            read: true,
+            folder: 'sent'
+        });
+
+        // Simulate receiving a reply (for demo purposes)
+        if (to.includes('@example.com')) {
+            setTimeout(() => {
+                emails.push({
+                    id: generateId(),
+                    from: to,
+                    to: 'user@ekmail.com',
+                    subject: 'Re: ' + (subject || '(No subject)'),
+                    body: 'Thanks for your email! This is an automated reply.',
+                    date: new Date().toISOString(),
+                    read: false,
+                    folder: 'inbox'
+                });
+                saveEmails();
+                if (currentFolder === 'inbox') renderEmailList();
+                updateUnreadCount();
+            }, 2000);
+        }
+
+        saveEmails();
+        if (currentFolder === 'sent') renderEmailList();
+        closeComposeModal();
+        alert('Email sent successfully!');
+    }
+
+    function refreshEmails() {
+        renderEmailList();
+    }
+
+    function deleteSelectedEmail() {
+        if (!selectedEmailId) {
+            alert('No email selected');
+            return;
+        }
+
+        const emailIndex = emails.findIndex(e => e.id === selectedEmailId);
+        if (emailIndex !== -1) {
+            emails[emailIndex].folder = 'trash';
+            saveEmails();
+            renderEmailList();
+            closeEmailDetail();
+        }
+    }
+
+    function replyToEmail() {
+        if (!selectedEmailId) return;
+        
+        const email = emails.find(e => e.id === selectedEmailId);
+        if (!email) return;
+        
+        openComposeModal();
+        document.getElementById('composeTo').value = email.from;
+        document.getElementById('composeSubject').value = 'Re: ' + email.subject;
+        document.getElementById('composeBody').value = `\n\n---------- Original Message ----------\nFrom: ${email.from}\nDate: ${new Date(email.date).toLocaleString()}\nSubject: ${email.subject}\n\n${email.body}`;
+    }
+
+    function forwardEmail() {
+        if (!selectedEmailId) return;
+        
+        const email = emails.find(e => e.id === selectedEmailId);
+        if (!email) return;
+        
+        openComposeModal();
+        document.getElementById('composeSubject').value = 'Fwd: ' + email.subject;
+        document.getElementById('composeBody').value = `\n\n---------- Forwarded Message ----------\nFrom: ${email.from}\nDate: ${new Date(email.date).toLocaleString()}\nSubject: ${email.subject}\n\n${email.body}`;
+    }
+
+    function updateUnreadCount() {
+        const unreadCount = emails.filter(e => e.folder === 'inbox' && !e.read).length;
+        inboxCount.textContent = unreadCount > 0 ? unreadCount : '';
+    }
+});
