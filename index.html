@@ -1,118 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EKmail</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
-    <div class="app-container">
-        <header class="app-header">
-            <div class="logo-container">
-                <i class="fas fa-envelope"></i>
-                <h1>EKmail</h1>
-            </div>
-            <div class="search-bar">
-                <input type="text" placeholder="Search mail...">
-                <button><i class="fas fa-search"></i></button>
-            </div>
-            <div class="user-menu">
-                <span class="username">user@ekmail.com</span>
-                <div class="avatar">U</div>
-            </div>
-        </header>
-
-        <div class="main-container">
-            <aside class="sidebar">
-                <button class="compose-btn">
-                    <i class="fas fa-plus"></i> Compose
-                </button>
-                <nav class="folder-list">
-                    <ul>
-                        <li class="active"><i class="fas fa-inbox"></i> Inbox <span class="badge">12</span></li>
-                        <li><i class="fas fa-star"></i> Starred</li>
-                        <li><i class="fas fa-clock"></i> Snoozed</li>
-                        <li><i class="fas fa-paper-plane"></i> Sent</li>
-                        <li><i class="fas fa-file-alt"></i> Drafts</li>
-                        <li><i class="fas fa-trash"></i> Trash</li>
-                    </ul>
-                </nav>
-                <div class="sidebar-footer">
-                    <p>Storage: 15% used</p>
-                    <div class="storage-bar">
-                        <div class="storage-used"></div>
-                    </div>
-                </div>
-            </aside>
-
-            <main class="email-content">
-                <div class="email-toolbar">
-                    <div class="toolbar-left">
-                        <button class="toolbar-btn"><i class="fas fa-inbox"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-exclamation-circle"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-trash"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-envelope"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-tag"></i></button>
-                    </div>
-                    <div class="toolbar-right">
-                        <button class="toolbar-btn"><i class="fas fa-chevron-left"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-chevron-right"></i></button>
-                        <button class="toolbar-btn"><i class="fas fa-cog"></i></button>
-                    </div>
-                </div>
-
-                <div class="email-list">
-                    <!-- Emails will be dynamically inserted here -->
-                </div>
-            </main>
-
-            <aside class="email-detail" id="emailDetail">
-                <div class="email-detail-header">
-                    <h2 id="emailSubject">Email Subject</h2>
-                    <button class="close-detail" id="closeDetail"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="email-detail-sender">
-                    <div class="sender-avatar">S</div>
-                    <div class="sender-info">
-                        <span class="sender-name">Sender Name</span>
-                        <span class="sender-email" id="senderEmail">sender@example.com</span>
-                        <span class="email-date" id="emailDate">Today, 10:30 AM</span>
-                    </div>
-                </div>
-                <div class="email-body" id="emailBody">
-                    <!-- Email content will be inserted here -->
-                </div>
-                <div class="email-actions">
-                    <button class="action-btn"><i class="fas fa-reply"></i> Reply</button>
-                    <button class="action-btn"><i class="fas fa-reply-all"></i> Reply All</button>
-                    <button class="action-btn"><i class="fas fa-share"></i> Forward</button>
-                </div>
-            </aside>
+<div class="ekmail-container">
+    <!-- Header -->
+    <div class="ekmail-header">
+        <div class="ekmail-logo">
+            <i class="fas fa-envelope"></i>
+            <h2>EKmail</h2>
         </div>
-
-        <div class="compose-modal" id="composeModal">
-            <div class="compose-header">
-                <h3>New Message</h3>
-                <button class="close-compose" id="closeCompose"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="composeForm">
-                <div class="compose-field">
-                    <input type="email" id="composeTo" placeholder="To" required>
-                </div>
-                <div class="compose-field">
-                    <input type="text" id="composeSubject" placeholder="Subject">
-                </div>
-                <textarea id="composeBody" placeholder="Write your message here..."></textarea>
-                <div class="compose-footer">
-                    <button type="submit" class="send-btn">Send</button>
-                    <button type="button" class="attach-btn"><i class="fas fa-paperclip"></i> Attach</button>
-                </div>
-            </form>
+        <div class="ekmail-search">
+            <input type="text" placeholder="Search emails..." id="ekmailSearch">
+            <button><i class="fas fa-search"></i></button>
+        </div>
+        <div class="ekmail-user">
+            <span id="ekmailUsername">user@ekmail.com</span>
+            <div class="ekmail-avatar" id="ekmailUserAvatar">U</div>
         </div>
     </div>
 
-    <script src="script.js"></script>
-</body>
-</html>
+    <!-- Main Content -->
+    <div class="ekmail-main">
+        <!-- Sidebar -->
+        <div class="ekmail-sidebar">
+            <button class="ekmail-compose-btn" id="ekmailComposeBtn">
+                <i class="fas fa-plus"></i> Compose
+            </button>
+            <nav class="ekmail-folders">
+                <ul>
+                    <li class="active" data-folder="inbox"><i class="fas fa-inbox"></i> Inbox <span class="badge" id="inboxCount">0</span></li>
+                    <li data-folder="sent"><i class="fas fa-paper-plane"></i> Sent</li>
+                    <li data-folder="drafts"><i class="fas fa-file-alt"></i> Drafts</li>
+                    <li data-folder="trash"><i class="fas fa-trash"></i> Trash</li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Email List -->
+        <div class="ekmail-content">
+            <div class="ekmail-toolbar">
+                <div class="toolbar-left">
+                    <button class="tool-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i></button>
+                    <button class="tool-btn" id="deleteBtn"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="toolbar-right">
+                    <span id="folderInfo">Inbox</span>
+                </div>
+            </div>
+            
+            <div class="ekmail-list" id="emailList">
+                <!-- Emails will load here -->
+            </div>
+        </div>
+
+        <!-- Email Detail View -->
+        <div class="ekmail-detail" id="emailDetailView">
+            <div class="detail-header">
+                <button class="close-detail" id="closeDetailBtn"><i class="fas fa-times"></i></button>
+                <h3 id="detailSubject">Subject</h3>
+            </div>
+            <div class="detail-sender">
+                <div class="sender-avatar" id="detailAvatar">S</div>
+                <div class="sender-info">
+                    <span id="detailSender">Sender Name</span>
+                    <span id="detailEmail">sender@example.com</span>
+                    <span id="detailDate">Today, 10:30 AM</span>
+                </div>
+            </div>
+            <div class="detail-body" id="detailBody">
+                <!-- Email content will appear here -->
+            </div>
+            <div class="detail-actions">
+                <button class="action-btn" id="replyBtn"><i class="fas fa-reply"></i> Reply</button>
+                <button class="action-btn" id="forwardBtn"><i class="fas fa-share"></i> Forward</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compose Modal -->
+    <div class="ekmail-compose-modal" id="composeModal">
+        <div class="compose-header">
+            <h3>New Message</h3>
+            <button class="close-compose" id="closeComposeBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="composeForm">
+            <div class="compose-field">
+                <input type="email" id="composeTo" placeholder="To" required>
+            </div>
+            <div class="compose-field">
+                <input type="text" id="composeSubject" placeholder="Subject">
+            </div>
+            <textarea id="composeBody" placeholder="Write your message here..."></textarea>
+            <div class="compose-actions">
+                <button type="submit" class="send-btn">Send</button>
+                <button type="button" class="attach-btn"><i class="fas fa-paperclip"></i> Attach</button>
+            </div>
+        </form>
+    </div>
+</div>
